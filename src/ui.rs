@@ -991,7 +991,7 @@ pub fn build_ui(app: &Application) {
 
             let dialog = gtk4::AboutDialog::builder()
                 .program_name("NVIDIA Driver Installer")
-                .version("2.3.0")
+                .version("2.4.0")
                 .authors(vec!["Linnard Alex Brown Jr.".to_string()])
                 .comments(&format!(
                     "GTK4 + Rust GUI for installing NVIDIA drivers from official .run files.\n\nGPU: {}\nDriver: {}\nKernel: {}",

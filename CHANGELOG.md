@@ -1,6 +1,16 @@
 # Changelog
 
-## 2.3.0 — Repo-style install (current)
+## 2.4.0 — Fedora and dnf-based distro support
+
+The install script now detects the package manager (apt vs dnf) and
+branches every distro-specific step accordingly: kernel header packages,
+clearing conflicting driver packages, initramfs rebuild (`dracut` instead
+of `update-initramfs`), and the optional version hold (`dnf versionlock`
+instead of `apt-mark hold`). No changes needed to the GUI itself — it
+was already package-manager agnostic. Less tested than the Ubuntu path;
+if something doesn't work right on Fedora, open an issue.
+
+## 2.3.0 — Repo-style install
 
 The big one. Rethought the install model entirely: instead of tearing down
 the graphical session to unload the live kernel module, the installer now

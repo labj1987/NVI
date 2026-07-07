@@ -18,10 +18,10 @@ I run NVIDIA's `.run` drivers instead of the packaged ones because the repos lag
 ## Requirements
 
 - x86_64 Linux with systemd and polkit
-- An apt-based distro (Ubuntu, Debian, Mint) for the install script. It uses `apt-get`, `dpkg`, and `update-initramfs`. The GUI itself runs anywhere the AppImage runs, but installing on non-apt distros is untested.
-- Kernel headers and DKMS, which the script installs for you if missing
+- Either an apt-based distro (Ubuntu, Debian, Mint) or a dnf-based distro (Fedora, RHEL, Nobara). The install script detects which one you have and uses the right package manager. Anything else, the GUI runs fine through the AppImage but the install script will refuse to run.
+- Kernel headers and DKMS, which the script installs for you if missing (`linux-headers`/`build-essential` on apt, `kernel-devel`/`kernel-headers` on dnf)
 
-Developed and tested on Ubuntu 26.04, GNOME on Wayland, RTX 5070, 595.x driver branch.
+Developed and tested on Ubuntu 26.04, GNOME on Wayland, RTX 5070, 595.x driver branch. Fedora support added in 2.4.0, less battle-tested than the Ubuntu path — if something's off on Fedora, open an issue.
 
 ## Install
 
@@ -44,7 +44,7 @@ The first launch asks for your password once so it can place the install helper 
 
 ## Headless servers
 
-The GUI is optional. The install script is standalone bash:
+The GUI is optional. The install script is standalone bash and works the same on apt or dnf systems:
 
 ```bash
 wget https://download.nvidia.com/XFree86/Linux-x86_64/595.84/NVIDIA-Linux-x86_64-595.84.run
@@ -56,7 +56,7 @@ Flags:
 | Flag | Effect |
 |---|---|
 | `--dkms` | Register the module with DKMS (recommended) |
-| `--hold` | Pin any driver-related apt packages with `apt-mark hold` |
+| `--hold` | Pin the driver at its current version — `apt-mark hold` on apt, `dnf versionlock` on Fedora (needs `python3-dnf-plugin-versionlock` installed) |
 | `--no-x-check` | Accepted for compatibility, the installer already skips the X check |
 
 Reboot afterward to switch drivers, same as the GUI flow.

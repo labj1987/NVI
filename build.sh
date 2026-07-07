@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PKG_NAME="nvidia-driver-installer"
-VERSION="2.3.0"
+VERSION="2.4.0"
 ARCH="amd64"
 DEB_NAME="${PKG_NAME}_${VERSION}_${ARCH}.deb"
 STAGING="/tmp/${PKG_NAME}-staging"
