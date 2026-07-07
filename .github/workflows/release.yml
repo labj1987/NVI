@@ -12,14 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install GTK4 and System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cargo rustc libgtk-4-dev libadwaita-1-dev pkg-config libssl-dev wget
+          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev pkg-config libssl-dev wget
+
+      - name: Set up Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Build AppImage
         run: |
-          sudo bash build-appimage.sh
+          # Run the script without sudo to let Cargo use the standard user home directory
+          bash build-appimage.sh
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
