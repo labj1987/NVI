@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Explicitly grant permission to write the compiled asset back to the release page
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
