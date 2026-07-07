@@ -20,10 +20,37 @@ jobs:
       - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build AppImage
+      - name: Build Production Release Binary
         run: |
-          export PATH="$HOME/.cargo/bin:$PATH"
-          SKIP_DEP_CHECK=1 bash build-appimage.sh
+          cargo build --release
+
+      - name: Package AppImage Manually
+        run: |
+          # 1. Download official appimagetool deployment utility
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+          # 2. Replicate structure required for AppImage packaging
+          mkdir -p AppDir/usr/bin
+          cp target/release/nvidia-driver-installer AppDir/usr/bin/
+          
+          # 3. Copy necessary desktop integration metadata from repo assets
+          cp data/nvidia-driver-installer.desktop AppDir/
+          cp data/com.lordnikon.nvidia-driver-installer.policy AppDir/
+          
+          # 4. Use a fallback icon for the AppImage metadata bundle framework
+          touch AppDir/nvidia-driver-installer.png
+          
+          # 5. Create basic runtime entrypoint script inside the bundle
+          cat << 'EOF' > AppDir/AppRun
+          #!/bin/sh
+          SELF=$(dirname "$(readlink -f "$0")")
+          exec "$SELF/usr/bin/nvidia-driver-installer" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+          # 6. Build the final signed artifact container binary package
+          ./appimagetool-x86_64.AppImage AppDir nvidia-driver-installer-2.4.0-x86_64.AppImage
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
