@@ -38,10 +38,13 @@ jobs:
           cp data/nvidia-driver-installer.desktop AppDir/
           cp data/com.lordnikon.nvidia-driver-installer.policy AppDir/
           
-          # 4. Use a fallback icon for the AppImage metadata bundle framework
+          # 4. Strip out DBusActivatable validation requirement completely
+          sed -i 's/DBusActivatable=true/DBusActivatable=false/g' AppDir/nvidia-driver-installer.desktop
+          
+          # 5. Use a fallback icon for the AppImage metadata bundle framework
           touch AppDir/nvidia-driver-installer.png
           
-          # 5. Create basic runtime entrypoint script inside the bundle
+          # 6. Create basic runtime entrypoint script inside the bundle
           cat << 'EOF' > AppDir/AppRun
           #!/bin/sh
           SELF=$(dirname "$(readlink -f "$0")")
@@ -49,7 +52,7 @@ jobs:
           EOF
           chmod +x AppDir/AppRun
 
-          # 6. Build the final signed artifact container binary package
+          # 7. Build the final signed artifact container binary package
           ./appimagetool-x86_64.AppImage AppDir nvidia-driver-installer-2.4.0-x86_64.AppImage
 
       - name: Create Release
