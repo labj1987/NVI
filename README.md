@@ -1,88 +1,110 @@
-# NVIDIA Driver Installer
+# NVI - NVIDIA Driver Installer
 
-A GTK4 + libadwaita desktop app for installing NVIDIA drivers from official `.run` files on Linux — written in Rust.
+A Linux desktop app for installing NVIDIA drivers from the official `.run` files. Written in Rust with GTK4 and libadwaita.
 
-Installs the new driver **repo-style**: the driver and DKMS module go on disk while your current driver keeps running, and the switch happens at your next reboot. No session teardown, no black screens, no dropping to a TTY.
+I run NVIDIA's `.run` drivers instead of the packaged ones because the repos lag behind and I sometimes need a specific version. The usual routine for that is dropping to a TTY, stopping the display manager, running the installer blind, and hoping the desktop comes back. This app skips all of that. It installs the new driver to disk the same way a package manager does, while the current driver keeps running. The swap happens on your next reboot and your desktop never goes down.
 
-## Features
+## What it does
 
-- **Browse every driver version** NVIDIA has published, live from `download.nvidia.com`, with labels showing which is currently installed, which are upgrades, and which are older
-- **System tab** — GPU model, running driver, kernel, DKMS module status, Secure Boot state, free disk space, and whether a reboot is pending
-- **Reboot detection that actually works** — compares the on-disk kernel module (`modinfo`) against the running driver, so a pending install shows "Reboot Required: Yes" until you restart
-- **SHA256 verification** of downloads against NVIDIA's published checksums, streamed in 1 MiB chunks
-- **Download manager** — progress, speed, ETA, cancel support, retry with backoff
-- **Local file support** — already have a `.run` file (e.g. a Vulkan beta driver)? Open it directly
-- **DKMS integration** — kernel module rebuilds automatically on kernel updates
-- **Safe by design** — the installer verifies the `.run` archive's integrity *before* touching anything, and the old driver is never disturbed while running
-- **Single privileged step** — the GUI runs unprivileged; only the install script runs as root, authorized through polkit
+- Lists every driver version on `download.nvidia.com`, newest first, and marks the one you're currently running
+- Downloads and verifies against NVIDIA's published SHA256 sums
+- Opens local `.run` files too, so Vulkan beta drivers or anything else you downloaded by hand work the same way
+- Shows your GPU, running driver, kernel, DKMS status, Secure Boot state, and free disk space in one place
+- Knows when a reboot is pending by comparing the kernel module on disk against the one that's loaded
+- Registers the driver with DKMS so the module rebuilds itself on kernel updates
+- Verifies the `.run` archive before changing anything, so a corrupt download stops the install with your current driver untouched
+- The GUI never runs as root. Only the install script does, through polkit, and you can read every line of it in `scripts/privileged-install.sh`
 
-## Installing
+## Requirements
 
-### AppImage (any distro)
+- x86_64 Linux with systemd and polkit
+- An apt-based distro (Ubuntu, Debian, Mint) for the install script. It uses `apt-get`, `dpkg`, and `update-initramfs`. The GUI itself runs anywhere the AppImage runs, but installing on non-apt distros is untested.
+- Kernel headers and DKMS, which the script installs for you if missing
 
-Download the latest `.AppImage` from [Releases](../../releases), then:
+Developed and tested on Ubuntu 26.04, GNOME on Wayland, RTX 5070, 595.x driver branch.
 
-```bash
-chmod +x NVIDIA_Driver_Installer-*.AppImage
-./NVIDIA_Driver_Installer-*.AppImage
-```
+## Install
 
-First launch prompts once for your password to install the privileged helper and polkit policy. Every run after that is instant.
-
-### .deb (Ubuntu / Debian)
-
-Download the `.deb` from [Releases](../../releases), then:
+Download the AppImage from [Releases](../../releases):
 
 ```bash
-sudo apt install -y ./nvidia-driver-installer_*.deb
+chmod +x nvidia-driver-installer-2.3.0-x86_64.AppImage
+./nvidia-driver-installer-2.3.0-x86_64.AppImage
 ```
 
-This adds the app to your launcher with full desktop integration.
+The first launch asks for your password once so it can place the install helper at `/usr/lib/nvidia-driver-installer/` and register its polkit policy. After that it starts like any other app. If you later download a newer AppImage, it detects the change and refreshes those files on its own.
 
-### Headless servers — no GUI needed
+## Using it
 
-The privileged script is standalone bash. Copy `scripts/privileged-install.sh` to the server and run:
+1. The System tab shows your hardware and current driver state.
+2. On the Browse tab, pick a version and hit Download, or use Open .run File if you already have one.
+3. On the Configure tab, leave DKMS on, optionally enable the apt hold, and hit Install Driver.
+4. Enter your password and wait a few minutes while the kernel module builds. The desktop stays up the whole time.
+5. Reboot whenever it suits you. The System tab shows Reboot Required: Yes until you do.
+
+## Headless servers
+
+The GUI is optional. The install script is standalone bash:
 
 ```bash
-wget https://download.nvidia.com/XFree86/Linux-x86_64/<VERSION>/NVIDIA-Linux-x86_64-<VERSION>.run
-sudo ./privileged-install.sh ./NVIDIA-Linux-x86_64-<VERSION>.run --dkms
+wget https://download.nvidia.com/XFree86/Linux-x86_64/595.84/NVIDIA-Linux-x86_64-595.84.run
+sudo ./privileged-install.sh ./NVIDIA-Linux-x86_64-595.84.run --dkms
 ```
 
-Reboot to switch to the new driver. Logs go to `/var/log/nvidia-driver-installer.log`.
+Flags:
+
+| Flag | Effect |
+|---|---|
+| `--dkms` | Register the module with DKMS (recommended) |
+| `--hold` | Pin any driver-related apt packages with `apt-mark hold` |
+| `--no-x-check` | Accepted for compatibility, the installer already skips the X check |
+
+Reboot afterward to switch drivers, same as the GUI flow.
+
+## Logs and troubleshooting
+
+Two files tell you everything:
+
+- `/var/log/nvidia-driver-installer.log` is written by this app's install script, step by step
+- `/var/log/nvidia-installer.log` is NVIDIA's own installer log
+
+If an install fails, the reason is in one of those. The most common cause is missing kernel headers for a brand new kernel, which resolves once your distro publishes them.
+
+## Uninstalling
+
+To remove the driver itself:
+
+```bash
+sudo nvidia-uninstall
+```
+
+To remove this app, delete the AppImage and optionally the helper files it installed:
+
+```bash
+sudo rm -rf /usr/lib/nvidia-driver-installer
+sudo rm /usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy
+```
 
 ## Building from source
 
-Requires Ubuntu 24.04+ (or equivalent) with `cargo`, `rustc`, `libgtk-4-dev`, `libadwaita-1-dev`, `pkg-config`, `libssl-dev`.
+Needs `cargo`, `rustc`, `libgtk-4-dev`, `libadwaita-1-dev`, `pkg-config`, and `libssl-dev`. Both build scripts install their own dependencies through apt.
 
 ```bash
-# .deb package
-sudo bash build.sh
-
 # AppImage
 sudo bash build-appimage.sh
+
+# .deb package, if you want desktop integration through apt instead
+sudo bash build.sh
 ```
 
-Both scripts install their own build dependencies via apt, compile the release binary, and produce the final artifact in the project directory.
+The output lands in the project directory. `Cargo.lock` is committed, so builds are reproducible.
 
-## How it works
+## How the install actually works
 
-1. The GUI (unprivileged) scrapes NVIDIA's public archive for available versions, downloads the selected `.run`, and verifies its SHA256.
-2. Clicking **Install Driver** invokes `privileged-install.sh` through `pkexec`, authorized by a polkit policy.
-3. The script verifies the archive integrity (`--check`), ensures kernel headers and DKMS are present, clears any conflicting distro packages, writes the nouveau blacklist, and then runs NVIDIA's installer with `--allow-installation-with-running-driver` — the flag that makes it proceed exactly like a package-manager driver upgrade.
-4. The new driver sits on disk; the running driver is untouched. Reboot whenever convenient, and the new one takes over.
-
-## Options
-
-| Option | Effect |
-|---|---|
-| Enable DKMS | Kernel module rebuilds automatically on kernel updates (recommended) |
-| Hold Package Version | Pins any driver-related apt packages with `apt-mark hold` |
-| Skip X Server Check | Passes `--no-x-check` to the installer (already the default behavior) |
+The script runs NVIDIA's installer with `--allow-installation-with-running-driver`, which is the same behavior your package manager relies on: files and the DKMS module go to disk, nothing touches the loaded driver, and the new one takes over at boot. Before that it verifies the archive with `--check`, makes sure headers and DKMS are present, clears any conflicting distro driver packages, blacklists nouveau, and rebuilds the initramfs afterward. Around 120 lines of bash, all readable.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
-
-## Author
+MIT. See [LICENSE](LICENSE).
 
 Linnard Alex Brown Jr.
