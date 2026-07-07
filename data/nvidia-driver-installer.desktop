@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=NVIDIA Driver Installer
+Comment=Install NVIDIA drivers from official .run files
+Exec=nvidia-driver-installer
+Icon=nvidia-driver-installer
+Terminal=false
+Categories=System;Settings;
+Keywords=nvidia;driver;gpu;install;
+StartupNotify=true
+StartupWMClass=com.lordnikon.nvidia-driver-installer
+DBusActivatable=true

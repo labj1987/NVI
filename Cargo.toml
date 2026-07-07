@@ -1,0 +1,31 @@
+[package]
+name = "nvidia-driver-installer"
+version = "2.3.0"
+edition = "2021"
+description = "NVIDIA Driver Installer — GTK4 GUI for Linux"
+authors = ["Alex Brown"]
+
+[[bin]]
+name = "nvidia-driver-installer"
+path = "src/main.rs"
+
+[dependencies]
+gtk4 = { version = "0.9", features = ["v4_12"] }
+libadwaita = { version = "0.7", features = ["v1_4"] }
+glib = "0.20"
+gio = "0.20"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["stream"] }
+sha2 = "0.10"
+hex = "0.4"
+futures-util = "0.3"
+scraper = "0.21"
+regex = "1"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+strip = true
+lto = true

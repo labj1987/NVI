@@ -1,0 +1,52 @@
+# Changelog
+
+## 2.3.0 — Repo-style install (current)
+
+The big one. Rethought the install model entirely: instead of tearing down
+the graphical session to unload the live kernel module, the installer now
+runs with `--allow-installation-with-running-driver` and installs the new
+driver to disk while the old one keeps running — exactly like a distro
+package upgrade. The switch happens at the next reboot.
+
+- No session teardown, no display manager stops, no black screens
+- Reboot Required detection now compares the on-disk module (`modinfo`)
+  against the running driver, so pending installs are reported correctly
+- Privileged script simplified from ~230 lines of session management to
+  ~120 straightforward lines
+- Fully verified end to end with a live install
+
+## 2.2.x — Detached-install experiments (superseded)
+
+Attempted to survive session teardown by re-executing the privileged script
+into a detached `systemd-run` scope with `IgnoreOnIsolate=true`. Worked, but
+2.3.0 made the entire problem unnecessary. Kept in history for reference.
+
+## 2.1.x — Feature releases
+
+- **2.1.4** — Fixed AppImage first-run: root cannot read another user's
+  FUSE mount, so privileged files are now staged through /tmp before
+  `pkexec` installs them
+- **2.1.3** — Module unload retries with process diagnostics (superseded)
+- **2.1.2** — Create the download directory if missing
+- **2.1.1** — Code-review hardening: `Cargo.lock` pinned for reproducible
+  builds; async bridge rewritten from polling timers to
+  `tokio::sync::oneshot` + `glib spawn_local`; SHA256 verification streams
+  in 1 MiB chunks instead of loading the whole file; DKMS status parser
+  rewritten to handle all output formats; archive integrity check moved
+  before any destructive step
+- **2.1.0** — System info tab (GPU, driver, kernel, DKMS, Secure Boot,
+  disk, reboot state); version comparison badges in the browse list;
+  pre-install checks; download cancel, speed and ETA; About dialog;
+  custom NVI icon set; single-instance fix (Wayland WM_CLASS must match
+  the full application ID); AppImage packaging
+
+## 2.0.0 — Rust rebuild
+
+Complete rewrite from Python/GTK4 to Rust + GTK4 + libadwaita. Single
+static binary, Tokio async runtime bridged to the glib main loop, `.deb`
+packaging.
+
+## 1.x — Original Python version
+
+GTK4 Python GUI with polkit-authorized install script, version browsing,
+download with progress, and SHA256 verification (added in 1.2.0).

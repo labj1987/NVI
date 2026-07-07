@@ -1,0 +1,11 @@
+Package: nvidia-driver-installer
+Version: 2.0.0
+Section: admin
+Priority: optional
+Architecture: amd64
+Depends: policykit-1 | polkitd, pkexec, libgtk-4-1, libadwaita-1-0, dkms, build-essential
+Maintainer: Alex Brown <alex@lordnikon.local>
+Description: NVIDIA Driver Installer
+ GTK4 + libadwaita GUI application for installing NVIDIA .run drivers
+ on Ubuntu. Supports version browsing, download with SHA256 verification,
+ DKMS integration, and polkit-authorized privileged installation.

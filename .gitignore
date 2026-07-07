@@ -1,0 +1,9 @@
+# Rust build output
+/target/
+
+# Packaging artifacts
+/AppDir/
+*.AppImage
+*.deb
+linuxdeploy-x86_64.AppImage
+linuxdeploy-plugin-gtk.sh

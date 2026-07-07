@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.lordnikon.nvidia-driver-installer
+Exec=/usr/bin/nvidia-driver-installer
