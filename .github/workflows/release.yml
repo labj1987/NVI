@@ -15,14 +15,15 @@ jobs:
       - name: Install GTK4 and System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev pkg-config libssl-dev wget
+          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev pkg-config libssl-dev wget libfuse2t64
 
       - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build AppImage
         run: |
-          # Run the script without sudo to let Cargo use the standard user home directory
+          # Inject the official modern Rust path directly into the execution environment
+          export PATH="$HOME/.cargo/bin:$PATH"
           bash build-appimage.sh
 
       - name: Create Release
