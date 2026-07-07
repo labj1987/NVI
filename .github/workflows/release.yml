@@ -22,9 +22,8 @@ jobs:
 
       - name: Build AppImage
         run: |
-          # Inject the official modern Rust path directly into the execution environment
           export PATH="$HOME/.cargo/bin:$PATH"
-          bash build-appimage.sh
+          SKIP_DEP_CHECK=1 bash build-appimage.sh
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
