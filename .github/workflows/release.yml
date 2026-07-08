@@ -5,58 +5,21 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Explicitly grant permission to write the compiled asset back to the release page
-    permissions:
-      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install GTK4 and System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-4-dev libadwaita-1-dev pkg-config libssl-dev wget libfuse2t64
-
       - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build Production Release Binary
-        run: |
-          cargo build --release
-
-      - name: Package AppImage Manually
-        run: |
-          # 1. Download official appimagetool deployment utility
-          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
-          chmod +x appimagetool-x86_64.AppImage
-
-          # 2. Replicate structure required for AppImage packaging
-          mkdir -p AppDir/usr/bin
-          cp target/release/nvidia-driver-installer AppDir/usr/bin/
-          
-          # 3. Copy necessary desktop integration metadata from repo assets
-          cp data/nvidia-driver-installer.desktop AppDir/
-          cp data/com.lordnikon.nvidia-driver-installer.policy AppDir/
-          
-          # 4. Strip out DBusActivatable validation requirement completely
-          sed -i 's/DBusActivatable=true/DBusActivatable=false/g' AppDir/nvidia-driver-installer.desktop
-          
-          # 5. Use a fallback icon for the AppImage metadata bundle framework
-          touch AppDir/nvidia-driver-installer.png
-          
-          # 6. Create basic runtime entrypoint script inside the bundle
-          cat << 'EOF' > AppDir/AppRun
-          #!/bin/sh
-          SELF=$(dirname "$(readlink -f "$0")")
-          exec "$SELF/usr/bin/nvidia-driver-installer" "$@"
-          EOF
-          chmod +x AppDir/AppRun
-
-          # 7. Build the final signed artifact container binary package
-          ./appimagetool-x86_64.AppImage AppDir nvidia-driver-installer-2.4.0-x86_64.AppImage
+      - name: Build AppImage
+        run: sudo -E env "PATH=$PATH" bash build-appimage.sh
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
