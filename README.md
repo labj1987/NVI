@@ -4,6 +4,16 @@ A Linux desktop app for installing NVIDIA drivers from the official `.run` files
 
 I run NVIDIA's `.run` drivers instead of the packaged ones because the repos lag behind and I sometimes need a specific version. The usual routine for that is dropping to a TTY, stopping the display manager, running the installer blind, and hoping the desktop comes back. This app skips all of that. It installs the new driver to disk the same way a package manager does, while the current driver keeps running. The swap happens on your next reboot and your desktop never goes down.
 
+## Screenshots
+
+| System | Browse |
+|---|---|
+| ![System tab showing GPU, driver, kernel, DKMS, and disk info](screenshots/system.png) | ![Browse tab showing version list with upgrade/installed/older labels](screenshots/browse.png) |
+
+| Configure | About |
+|---|---|
+| ![Configure tab showing selected driver, checksum, and install options](screenshots/configure.png) | ![About dialog showing app version and live system info](screenshots/about.png) |
+
 ## What it does
 
 - Lists every driver version on `download.nvidia.com`, newest first, and marks the one you're currently running
