@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.lordnikon.nvidia-driver-installer</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>NVIDIA Driver Installer</name>
+  <summary>Browse, verify, and install NVIDIA Linux drivers</summary>
+  <description>
+    <p>
+      A GTK4/libadwaita application for browsing available NVIDIA driver
+      versions, downloading official .run installers with SHA256
+      verification, and performing a polkit-authorized, DKMS-aware
+      installation. Includes system status checks for GPU, kernel,
+      secure boot, and disk space.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.lordnikon.nvidia-driver-installer.desktop</launchable>
+  <releases>
+    <release version="2.4.0" date="2026-07-09"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
