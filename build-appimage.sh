@@ -35,6 +35,7 @@ mkdir -p "$APPDIR/usr/lib/${APP}"
 mkdir -p "$APPDIR/usr/share/applications"
 mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 mkdir -p "$APPDIR/usr/share/polkit-1/actions"
+mkdir -p "$APPDIR/usr/share/metainfo"
 
 # Binary
 install -Dm755 "target/release/${APP}" "$APPDIR/usr/bin/${APP}"
@@ -46,6 +47,13 @@ install -Dm755 "scripts/privileged-install.sh" \
 # Polkit policy
 install -Dm644 "data/com.lordnikon.nvidia-driver-installer.policy" \
     "$APPDIR/usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy"
+
+# AppStream metadata — gives software centers (GNOME Software, KDE Discover,
+# AppImageHub) a proper name, summary, description, and release info
+# instead of showing nothing. Silences the "AppStream upstream metadata
+# is missing" warning from appimagetool.
+install -Dm644 "data/com.lordnikon.nvidia-driver-installer.appdata.xml" \
+    "$APPDIR/usr/share/metainfo/com.lordnikon.nvidia-driver-installer.appdata.xml"
 
 # Desktop file — AppImage-specific copy WITHOUT DBusActivatable.
 # DBus activation needs a system-installed service file pointing at a
