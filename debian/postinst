@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-
-chmod +x /usr/lib/nvidia-driver-installer/privileged-install.sh
-chmod 755 /usr/lib/nvidia-driver-installer/
-chmod 644 /usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy
-
-exit 0
