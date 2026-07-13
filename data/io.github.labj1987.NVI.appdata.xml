@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.lordnikon.nvidia-driver-installer</id>
+  <id>io.github.labj1987.NVI</id>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
   <name>NVIDIA Driver Installer</name>
@@ -14,9 +14,13 @@
       secure boot, and disk space.
     </p>
   </description>
-  <launchable type="desktop-id">com.lordnikon.nvidia-driver-installer.desktop</launchable>
+  <launchable type="desktop-id">nvidia-driver-installer.desktop</launchable>
+  <url type="homepage">https://github.com/labj1987/NVI</url>
+  <developer id="io.github.labj1987">
+    <name>Alex Brown</name>
+  </developer>
   <releases>
-    <release version="2.5.0" date="2026-07-13"/>
+    <release version="2.5.2" date="2026-07-13"/>
   </releases>
   <content_rating type="oars-1.1"/>
 </component>
