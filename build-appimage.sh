@@ -4,7 +4,7 @@
 set -euo pipefail
 
 APP="nvidia-driver-installer"
-VERSION="2.4.0"
+VERSION="2.5.0"
 APPDIR="$(pwd)/AppDir"
 
 echo "==> Checking build dependencies…"
@@ -17,10 +17,6 @@ apt-get install -y \
     libssl-dev \
     wget
 
-# FUSE is only needed to RUN the finished AppImage, not to build it
-# (linuxdeploy runs with APPIMAGE_EXTRACT_AND_RUN=1). The package name
-# changed to libfuse2t64 on newer Ubuntu, so try both and never fail
-# the build over it.
 apt-get install -y libfuse2 2>/dev/null \
     || apt-get install -y libfuse2t64 2>/dev/null \
     || echo "NOTE: libfuse2 not available — run the AppImage with --appimage-extract-and-run"
@@ -37,53 +33,30 @@ mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 mkdir -p "$APPDIR/usr/share/polkit-1/actions"
 mkdir -p "$APPDIR/usr/share/metainfo"
 
-# Binary
 install -Dm755 "target/release/${APP}" "$APPDIR/usr/bin/${APP}"
 
-# Privileged install script — stays bundled, extracted at runtime
 install -Dm755 "scripts/privileged-install.sh" \
     "$APPDIR/usr/lib/${APP}/privileged-install.sh"
 
-# Polkit policy
 install -Dm644 "data/com.lordnikon.nvidia-driver-installer.policy" \
     "$APPDIR/usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy"
 
-# AppStream metadata — gives software centers (GNOME Software, KDE Discover,
-# AppImageHub) a proper name, summary, description, and release info
-# instead of showing nothing. Silences the "AppStream upstream metadata
-# is missing" warning from appimagetool.
 install -Dm644 "data/com.lordnikon.nvidia-driver-installer.appdata.xml" \
     "$APPDIR/usr/share/metainfo/com.lordnikon.nvidia-driver-installer.appdata.xml"
 
-# Desktop file — AppImage-specific copy WITHOUT DBusActivatable.
-# DBus activation needs a system-installed service file pointing at a
-# real /usr/bin binary, which AppImage users don't have; leaving the key
-# in would make an integrated dock icon silently do nothing. Runtime
-# single-instance behaviour still works (GApplication claims the bus
-# name itself when the app starts).
 sed '/^DBusActivatable=/d' "data/nvidia-driver-installer.desktop" \
     > "$APPDIR/nvidia-driver-installer.desktop"
 install -Dm644 "$APPDIR/nvidia-driver-installer.desktop" \
     "$APPDIR/usr/share/applications/nvidia-driver-installer.desktop"
 
-# Icon (256px for AppImage standard)
 install -Dm644 "data/nvidia-driver-installer-256.png" \
     "$APPDIR/usr/share/icons/hicolor/256x256/apps/nvidia-driver-installer.png"
-# AppImage also wants icon at root of AppDir
 cp "data/nvidia-driver-installer-256.png" "$APPDIR/nvidia-driver-installer.png"
 
-# AppRun — the entry point for the AppImage
-# root (via pkexec) cannot read files out of this user's FUSE-mounted
-# AppImage, so the privileged files are staged to /tmp before being
-# installed to their real system locations.
 cat > "$APPDIR/AppRun" << 'APPRUN'
 #!/usr/bin/env bash
 HERE="$(dirname "$(readlink -f "$0")")"
 
-# The privileged helper must live on the real filesystem: pkexec cannot
-# execute anything under the AppImage's FUSE mount. Install it and the
-# polkit policy on first run, and REFRESH them if the bundled copies
-# differ (i.e. after updating to a newer AppImage).
 PRIV_SRC="${HERE}/usr/lib/nvidia-driver-installer/privileged-install.sh"
 PRIV_DST="/usr/lib/nvidia-driver-installer/privileged-install.sh"
 POLICY_SRC="${HERE}/usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy"
@@ -100,11 +73,6 @@ fi
 if [[ $need_install -eq 1 ]]; then
     echo "Installing/updating privileged components (password required)…"
 
-    # pkexec elevates to root, but root cannot read files out of THIS
-    # user's FUSE mount (AppImages are only readable by the mounting
-    # user). Stage the two small files in /tmp first — root can read
-    # /tmp — then have the privileged install copy from there instead
-    # of reaching back into the mount.
     STAGE="$(mktemp -d /tmp/nvidia-driver-installer.XXXXXX)"
     cp "$PRIV_SRC" "$STAGE/privileged-install.sh"
     cp "$POLICY_SRC" "$STAGE/policy.policy"
@@ -125,7 +93,6 @@ if [[ $need_install -eq 1 ]]; then
     fi
 fi
 
-# Run the app
 export PATH="${HERE}/usr/bin:$PATH"
 export XDG_DATA_DIRS="${HERE}/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 exec "${HERE}/usr/bin/nvidia-driver-installer" "$@"
@@ -148,7 +115,6 @@ VERSION="$VERSION" \
     --icon-file "data/nvidia-driver-installer-256.png" \
     --desktop-file "$APPDIR/nvidia-driver-installer.desktop"
 
-# Rename to something clean
 OUTFILE=$(ls *.AppImage 2>/dev/null | head -1)
 if [[ -n "$OUTFILE" ]]; then
     mv "$OUTFILE" "nvidia-driver-installer-${VERSION}-x86_64.AppImage"
