@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # build-appimage.sh — Build nvidia-driver-installer as an AppImage
-# Run from the project root on LordNikon (Ubuntu 26.04, amd64)
 set -euo pipefail
 
 APP="nvidia-driver-installer"
-VERSION="2.5.0"
+VERSION="2.5.1"
 APPDIR="$(pwd)/AppDir"
 
 echo "==> Checking build dependencies…"
@@ -41,8 +40,8 @@ install -Dm755 "scripts/privileged-install.sh" \
 install -Dm644 "data/com.lordnikon.nvidia-driver-installer.policy" \
     "$APPDIR/usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy"
 
-install -Dm644 "data/com.lordnikon.nvidia-driver-installer.appdata.xml" \
-    "$APPDIR/usr/share/metainfo/com.lordnikon.nvidia-driver-installer.appdata.xml"
+install -Dm644 "data/nvidia-driver-installer.appdata.xml" \
+    "$APPDIR/usr/share/metainfo/nvidia-driver-installer.appdata.xml"
 
 sed '/^DBusActivatable=/d' "data/nvidia-driver-installer.desktop" \
     > "$APPDIR/nvidia-driver-installer.desktop"
