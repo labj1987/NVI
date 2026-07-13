@@ -92,19 +92,15 @@ To remove this app, delete the AppImage and optionally the helper files it insta
 
 ```bash
 sudo rm -rf /usr/lib/nvidia-driver-installer
-sudo rm /usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy
+sudo rm /usr/share/polkit-1/actions/io.github.labj1987.NVI.policy
 ```
 
 ## Building from source
 
-Needs `cargo`, `rustc`, `libgtk-4-dev`, `libadwaita-1-dev`, `pkg-config`, and `libssl-dev`. Both build scripts install their own dependencies through apt.
+Needs `cargo`, `rustc`, `libgtk-4-dev`, `libadwaita-1-dev`, `pkg-config`, and `libssl-dev`. The build script installs its own dependencies through apt.
 
 ```bash
-# AppImage
 sudo bash build-appimage.sh
-
-# .deb package, if you want desktop integration through apt instead
-sudo bash build.sh
 ```
 
 The output lands in the project directory. `Cargo.lock` is committed, so builds are reproducible.
