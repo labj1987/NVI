@@ -29,7 +29,7 @@ fn main() {
     glib::set_application_name("NVIDIA Driver Installer");
 
     let app = libadwaita::Application::builder()
-        .application_id("com.lordnikon.nvidia-driver-installer")
+        .application_id("io.github.labj1987.NVI")
         .flags(gio::ApplicationFlags::FLAGS_NONE)
         .build();
 
