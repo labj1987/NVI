@@ -3,7 +3,7 @@
 set -euo pipefail
 
 APP="nvidia-driver-installer"
-VERSION="2.5.1"
+VERSION="2.5.2"
 APPDIR="$(pwd)/AppDir"
 
 echo "==> Checking build dependencies…"
@@ -37,16 +37,15 @@ install -Dm755 "target/release/${APP}" "$APPDIR/usr/bin/${APP}"
 install -Dm755 "scripts/privileged-install.sh" \
     "$APPDIR/usr/lib/${APP}/privileged-install.sh"
 
-install -Dm644 "data/com.lordnikon.nvidia-driver-installer.policy" \
-    "$APPDIR/usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy"
+install -Dm644 "data/io.github.labj1987.NVI.policy" \
+    "$APPDIR/usr/share/polkit-1/actions/io.github.labj1987.NVI.policy"
 
-install -Dm644 "data/nvidia-driver-installer.appdata.xml" \
-    "$APPDIR/usr/share/metainfo/nvidia-driver-installer.appdata.xml"
+install -Dm644 "data/io.github.labj1987.NVI.appdata.xml" \
+    "$APPDIR/usr/share/metainfo/io.github.labj1987.NVI.appdata.xml"
 
-sed '/^DBusActivatable=/d' "data/nvidia-driver-installer.desktop" \
-    > "$APPDIR/nvidia-driver-installer.desktop"
-install -Dm644 "$APPDIR/nvidia-driver-installer.desktop" \
+install -Dm644 "data/nvidia-driver-installer.desktop" \
     "$APPDIR/usr/share/applications/nvidia-driver-installer.desktop"
+cp "data/nvidia-driver-installer.desktop" "$APPDIR/nvidia-driver-installer.desktop"
 
 install -Dm644 "data/nvidia-driver-installer-256.png" \
     "$APPDIR/usr/share/icons/hicolor/256x256/apps/nvidia-driver-installer.png"
@@ -58,8 +57,8 @@ HERE="$(dirname "$(readlink -f "$0")")"
 
 PRIV_SRC="${HERE}/usr/lib/nvidia-driver-installer/privileged-install.sh"
 PRIV_DST="/usr/lib/nvidia-driver-installer/privileged-install.sh"
-POLICY_SRC="${HERE}/usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy"
-POLICY_DST="/usr/share/polkit-1/actions/com.lordnikon.nvidia-driver-installer.policy"
+POLICY_SRC="${HERE}/usr/share/polkit-1/actions/io.github.labj1987.NVI.policy"
+POLICY_DST="/usr/share/polkit-1/actions/io.github.labj1987.NVI.policy"
 
 need_install=0
 [[ -f "$PRIV_DST" ]]   || need_install=1
