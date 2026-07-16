@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.5.3 — Bug fixes and version-string consolidation
+
+- Fixed wrong version being selected when the search filter is active:
+  the selection handler indexed the full version list by visible row
+  position, so filtering could select (and download) a different driver
+  than the one clicked. Selection now looks up the version by the row's
+  title.
+- The row-selected handler is now connected once instead of on every
+  refresh, so handlers no longer accumulate.
+- Replaced the 600-second total request timeout with connect and read
+  timeouts, so a slow but healthy download of a large .run file is no
+  longer killed at the 10-minute mark. Stalled connections still time
+  out after 60 seconds without data.
+- A file that fails SHA256 verification is now actually deleted, as the
+  UI already claimed.
+- Removed the Skip X Server Check switch: since the 2.3.0 repo-style
+  install the script always passes --no-x-check to the installer, so
+  the switch did nothing.
+- Fixed the Fedora path never clearing dnf versionlock entries before
+  package removal (broken plugin detection).
+- Version now lives only in Cargo.toml: the About dialog and HTTP user
+  agent read CARGO_PKG_VERSION at compile time, and build-appimage.sh
+  parses Cargo.toml. The About dialog previously reported 2.4.0 in the
+  2.5.x releases because the hardcoded copies were missed.
+
+## 2.5.2 — New application ID (retroactive entry)
+
+Application ID moved to io.github.labj1987.NVI (polkit action, appdata,
+application_id); all machine-specific references removed; .deb packaging
+and DBus service file deleted. AppImage is the only distribution format.
+
 ## 2.4.0 — Fedora and dnf-based distro support
 
 The install script now detects the package manager (apt vs dnf) and
