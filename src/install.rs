@@ -5,7 +5,6 @@ use std::process::Command;
 pub struct InstallOptions {
     pub use_dkms: bool,
     pub hold_packages: bool,
-    pub skip_x_check: bool,
     pub run_file: String,
 }
 
@@ -31,9 +30,6 @@ pub fn run_privileged_install(opts: &InstallOptions) -> Result<()> {
     }
     if opts.hold_packages {
         args.push("--hold".to_string());
-    }
-    if opts.skip_x_check {
-        args.push("--no-x-check".to_string());
     }
 
     let status = Command::new("pkexec")
