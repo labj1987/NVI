@@ -98,7 +98,7 @@ if [[ "$PKG_MGR" == "apt" ]]; then
 else
     # Fedora driver packages typically come from RPM Fusion: akmod-nvidia,
     # xorg-x11-drv-nvidia*, kmod-nvidia*, nvidia-driver* if present.
-    if command -v dnf versionlock >/dev/null 2>&1; then
+    if dnf versionlock --help >/dev/null 2>&1; then
         dnf versionlock delete 'nvidia*' 'akmod-nvidia*' 'xorg-x11-drv-nvidia*' \
             'kmod-nvidia*' 2>/dev/null || true
     fi
