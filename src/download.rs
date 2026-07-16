@@ -29,9 +29,13 @@ where
         .await
         .with_context(|| format!("Could not create download directory: {}", dest_dir.display()))?;
 
+    // connect_timeout + read_timeout instead of a total request timeout:
+    // a total timeout would kill a slow-but-healthy multi-hundred-MB
+    // download; read_timeout only fires when the stream actually stalls.
     let client = reqwest::Client::builder()
-        .user_agent("nvidia-driver-installer/2.1")
-        .timeout(std::time::Duration::from_secs(600))
+        .user_agent(concat!("nvidia-driver-installer/", env!("CARGO_PKG_VERSION")))
+        .connect_timeout(std::time::Duration::from_secs(30))
+        .read_timeout(std::time::Duration::from_secs(60))
         .build()?;
 
     let mut last_err = anyhow::anyhow!("unknown error");
