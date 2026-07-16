@@ -38,8 +38,8 @@ Developed and tested on Ubuntu 26.04, GNOME on Wayland, RTX 5070, 595.x driver b
 Download the AppImage from [Releases](../../releases):
 
 ```bash
-chmod +x nvidia-driver-installer-2.3.0-x86_64.AppImage
-./nvidia-driver-installer-2.3.0-x86_64.AppImage
+chmod +x nvidia-driver-installer-*-x86_64.AppImage
+./nvidia-driver-installer-*-x86_64.AppImage
 ```
 
 The first launch asks for your password once so it can place the install helper at `/usr/lib/nvidia-driver-installer/` and register its polkit policy. After that it starts like any other app. If you later download a newer AppImage, it detects the change and refreshes those files on its own.
