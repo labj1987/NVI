@@ -3,7 +3,8 @@
 set -euo pipefail
 
 APP="nvidia-driver-installer"
-VERSION="2.5.2"
+# Single source of truth: the version in Cargo.toml
+VERSION="$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)"
 APPDIR="$(pwd)/AppDir"
 
 echo "==> Checking build dependencies…"
