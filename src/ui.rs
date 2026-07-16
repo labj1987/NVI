@@ -30,7 +30,6 @@ struct AppState {
     expected_checksum: Option<String>,
     use_dkms: bool,
     hold_packages: bool,
-    skip_x_check: bool,
     sysinfo: SystemInfo,
     download_cancel: Option<Arc<std::sync::atomic::AtomicBool>>,
 }
@@ -44,7 +43,6 @@ impl Default for AppState {
             expected_checksum: None,
             use_dkms: true,
             hold_packages: false,
-            skip_x_check: false,
             sysinfo: SystemInfo::default(),
             download_cancel: None,
         }
@@ -284,17 +282,8 @@ pub fn build_ui(app: &Application) {
     hold_opt_row.add_suffix(&hold_switch);
     hold_opt_row.set_activatable_widget(Some(&hold_switch));
 
-    let xcheck_opt_row = ActionRow::builder()
-        .title("Skip X Server Check")
-        .subtitle("Allow install even if an X session is detected")
-        .build();
-    let xcheck_switch = Switch::builder().valign(Align::Center).build();
-    xcheck_opt_row.add_suffix(&xcheck_switch);
-    xcheck_opt_row.set_activatable_widget(Some(&xcheck_switch));
-
     opts_group.add(&dkms_opt_row);
     opts_group.add(&hold_opt_row);
-    opts_group.add(&xcheck_opt_row);
     config_page.append(&opts_group);
 
     let progress = ProgressBar::new();
@@ -589,7 +578,6 @@ pub fn build_ui(app: &Application) {
 
             let list_box = list_box.clone();
             let list_spinner = list_spinner.clone();
-            let download_btn = download_btn.clone();
             let selected_label = selected_label.clone();
             let banner = banner.clone();
             let state = state.clone();
@@ -611,29 +599,6 @@ pub fn build_ui(app: &Application) {
                         state.borrow_mut().versions = versions.clone();
                         let installed = state.borrow().sysinfo.installed_driver.clone();
                         populate_list(&list_box, &versions, &search_entry.text(), installed.as_deref());
-
-                        let state2 = state.clone();
-                        let dl_btn = download_btn.clone();
-                        let sel_lbl = selected_label.clone();
-                        let dl_btn2 = download_btn.clone();
-                        let sel_lbl2 = selected_label.clone();
-                        list_box.connect_row_selected(move |_, row| {
-                            if let Some(row) = row {
-                                let idx = row.index() as usize;
-                                let s = state2.borrow();
-                                if idx < s.versions.len() {
-                                    let ver = s.versions[idx].clone();
-                                    drop(s);
-                                    sel_lbl.set_label(&format!("Selected: {}", ver.version));
-                                    state2.borrow_mut().selected_version = Some(ver);
-                                    dl_btn.set_sensitive(true);
-                                }
-                            } else {
-                                dl_btn2.set_sensitive(false);
-                                sel_lbl2.set_label("No version selected");
-                                state2.borrow_mut().selected_version = None;
-                            }
-                        });
                     }
                 }
             });
@@ -643,6 +608,38 @@ pub fn build_ui(app: &Application) {
     load_versions();
 
     { let lv = load_versions.clone(); refresh_btn.connect_clicked(move |_| lv()); }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Row selection — connected exactly once. The version is looked up by the
+    //  row's title (the version string), never by row index: when the search
+    //  filter is active the visible rows are a subset, so an index into the
+    //  full versions vec would select the wrong driver.
+    // ─────────────────────────────────────────────────────────────────────────
+    {
+        let state = state.clone();
+        let download_btn = download_btn.clone();
+        let selected_label = selected_label.clone();
+        list_box.connect_row_selected(move |_, row| {
+            let selected = row
+                .and_then(|r| r.downcast_ref::<ActionRow>().map(|ar| ar.title().to_string()))
+                .and_then(|title| {
+                    state.borrow().versions.iter().find(|v| v.version == title).cloned()
+                });
+
+            match selected {
+                Some(ver) => {
+                    selected_label.set_label(&format!("Selected: {}", ver.version));
+                    state.borrow_mut().selected_version = Some(ver);
+                    download_btn.set_sensitive(true);
+                }
+                None => {
+                    download_btn.set_sensitive(false);
+                    selected_label.set_label("No version selected");
+                    state.borrow_mut().selected_version = None;
+                }
+            }
+        });
+    }
 
     {
         let list_box = list_box.clone();
@@ -811,7 +808,16 @@ pub fn build_ui(app: &Application) {
                                         }
                                         Err(e) => {
                                             log_fn2(format!("SHA256 FAILED: {}", e));
-                                            progress2.set_text(Some("Checksum mismatch — file deleted"));
+                                            match std::fs::remove_file(&path) {
+                                                Ok(()) => {
+                                                    log_fn2(format!("Deleted corrupt file: {}", path.display()));
+                                                    progress2.set_text(Some("Checksum mismatch — file deleted"));
+                                                }
+                                                Err(del_err) => {
+                                                    log_fn2(format!("Could not delete file: {}", del_err));
+                                                    progress2.set_text(Some("Checksum mismatch — delete the file manually"));
+                                                }
+                                            }
                                             toast2.add_toast(Toast::new("Checksum mismatch — do not install"));
                                         }
                                     },
@@ -886,7 +892,6 @@ pub fn build_ui(app: &Application) {
     // ─────────────────────────────────────────────────────────────────────────
     { let s = state.clone(); dkms_switch.connect_active_notify(move |sw| { s.borrow_mut().use_dkms = sw.is_active(); }); }
     { let s = state.clone(); hold_switch.connect_active_notify(move |sw| { s.borrow_mut().hold_packages = sw.is_active(); }); }
-    { let s = state.clone(); xcheck_switch.connect_active_notify(move |sw| { s.borrow_mut().skip_x_check = sw.is_active(); }); }
 
     // ─────────────────────────────────────────────────────────────────────────
     //  Install
@@ -913,7 +918,6 @@ pub fn build_ui(app: &Application) {
             let opts = InstallOptions {
                 use_dkms: s.use_dkms,
                 hold_packages: s.hold_packages,
-                skip_x_check: s.skip_x_check,
                 run_file: run_file.clone(),
             };
             drop(s);
@@ -991,7 +995,7 @@ pub fn build_ui(app: &Application) {
 
             let dialog = gtk4::AboutDialog::builder()
                 .program_name("NVIDIA Driver Installer")
-                .version("2.4.0")
+                .version(env!("CARGO_PKG_VERSION"))
                 .authors(vec!["Linnard Alex Brown Jr.".to_string()])
                 .comments(&format!(
                     "GTK4 + Rust GUI for installing NVIDIA drivers from official .run files.\n\nGPU: {}\nDriver: {}\nKernel: {}",
