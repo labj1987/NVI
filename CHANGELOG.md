@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.5.6 — Fix orphaned .zsync sidecar
+
+- build-appimage.sh renamed only the built .AppImage to its final
+  versioned filename; a same-named .zsync sidecar produced by linuxdeploy
+  was left under linuxdeploy's original output filename and was never
+  renamed or moved. CI's release glob only matches the versioned
+  filename pattern, so the .zsync silently never got uploaded even
+  after 2.5.5 fixed zsync not being installed. The .zsync is now
+  renamed alongside the AppImage.
+
 ## 2.5.5 — Fix missing .zsync file
 
 - The build runner never had zsync installed, so linuxdeploy silently

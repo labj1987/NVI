@@ -120,6 +120,9 @@ OUTFILE=$(ls *.AppImage 2>/dev/null | head -1)
 if [[ -n "$OUTFILE" ]]; then
     mv "$OUTFILE" "nvidia-driver-installer-${VERSION}-x86_64.AppImage"
     chmod +x "nvidia-driver-installer-${VERSION}-x86_64.AppImage"
+    if [[ -f "${OUTFILE}.zsync" ]]; then
+        mv "${OUTFILE}.zsync" "nvidia-driver-installer-${VERSION}-x86_64.AppImage.zsync"
+    fi
     echo ""
     echo "==> Done: nvidia-driver-installer-${VERSION}-x86_64.AppImage"
     echo ""
