@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.4 — Enable update checking
+
+- Embedded UPDATE_INFORMATION in the AppImage so update-aware tools
+  (Gear Lever, AppImageUpdate) can check GitHub Releases for newer
+  versions and delta-update via zsync. CI now also uploads the .zsync
+  file alongside the AppImage.
+
 ## 2.5.3 — Bug fixes and version-string consolidation
 
 - Fixed wrong version being selected when the search filter is active:

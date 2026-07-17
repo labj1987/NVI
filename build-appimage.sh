@@ -107,6 +107,7 @@ chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
 echo "==> Building AppImage…"
 APPIMAGE_EXTRACT_AND_RUN=1 \
 VERSION="$VERSION" \
+UPDATE_INFORMATION="gh-releases-zsync|labj1987|NVI|latest|nvidia-driver-installer-*-x86_64.AppImage" \
     ./linuxdeploy-x86_64.AppImage \
     --appdir "$APPDIR" \
     --plugin gtk \
