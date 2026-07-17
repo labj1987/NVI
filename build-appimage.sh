@@ -15,7 +15,8 @@ apt-get install -y \
     libadwaita-1-dev \
     pkg-config \
     libssl-dev \
-    wget
+    wget \
+    zsync
 
 apt-get install -y libfuse2 2>/dev/null \
     || apt-get install -y libfuse2t64 2>/dev/null \

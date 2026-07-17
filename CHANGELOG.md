@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.5 — Fix missing .zsync file
+
+- The build runner never had zsync installed, so linuxdeploy silently
+  skipped generating the .zsync file even though UPDATE_INFORMATION was
+  already set in 2.5.4 — update-aware tools had nothing to delta-update
+  against. zsync is now installed alongside the other build dependencies.
+
 ## 2.5.4 — Enable update checking
 
 - Embedded UPDATE_INFORMATION in the AppImage so update-aware tools
